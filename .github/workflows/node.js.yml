@@ -8,7 +8,9 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         node-version: [12.x]
@@ -16,43 +18,32 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        path: '/front'
 
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-        cache: npm
-        always-auth: false
-        check-latest: false
-        token: ${{ secrets.NODE_AUTH_TOKEN }} # make sure you have setup NODE_AUTH_TOKEN in your repo secrets.
 
     - name: Install dependencies
       run: npm install
-      working-directory: /front
- 
+
     - name: Run the tests and generate coverage report
       run: npm test -- --coverage
-      working-directory: /front
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      working-directory: /front
 
     - name: Build
       run: npm run build
-      working-directory: /front
 
     - name: Deploy
       run: |
         git config --global user.name $user_name
         git config --global user.email $user_email
-        cd /front
-        git remote set-url origin https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${repository}
+        git remote set-url origin https://${github_token}@github.com/${repository}
         npm run deploy
       env:
         user_name: 'github-actions[bot]'
         user_email: 'github-actions[bot]@users.noreply.github.com'
+        github_token: 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
         repository: ${{ github.repository }}
-        PERSONAL_ACCESS_TOKEN: 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
