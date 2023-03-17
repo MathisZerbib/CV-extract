@@ -39,6 +39,7 @@ function Email({ email }) {
 }
 
 function App() {
+  const [files, setFiles] = useState([]);
   const [currentPreview, setCurrentPreview] = useState(null);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [name, setName] = useState("");
@@ -70,7 +71,18 @@ function App() {
     event.preventDefault();
     // create FormData object to send file as multipart/form-data
     const formData = new FormData();
+    files.forEach((file) => {
+      // Check if the file is an image or pdf
+      const isImage = file.type.startsWith("image/");
+      const isPdf = file.type === "application/pdf";
+      if (!isImage && !isPdf) {
+        console.error(`File ${file.name} is not an image or pdf`);
+        return; // skip this file and continue with others
+      }
 
+      const key = isImage ? "images[]" : "pdfs[]";
+      formData.append(key, file);
+    });
     imagePreviews.forEach((preview) => {
       // Send an HTTP GET request to the image URL to get the raw image file.
       axios.get(preview.preview, { responseType: "blob" }).then((response) => {
@@ -145,7 +157,14 @@ function App() {
                 {...getRootProps()}
               >
                 <input {...getInputProps()} />
-                <Typography variant="body1">
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: "grey",
+                    textAlign: "center",
+                    padding: "1rem",
+                  }}
+                >
                   Drag and drop business card images here or click to select
                   files
                 </Typography>
