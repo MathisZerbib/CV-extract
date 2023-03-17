@@ -52,7 +52,6 @@ function processText(text) {
     adv: doc.match("#Adverb"),
     det: doc.match("#Determiner"),
     conj: doc.match("#Conjunction"),
-    prep: doc.match("#Preposition"),
     num: doc.match("#Value"),
     penn: doc.compute("penn"),
     surname: doc.match("#Person"),
