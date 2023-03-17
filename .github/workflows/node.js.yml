@@ -1,5 +1,10 @@
 name: Node.js CI
 
+defaults:
+  run:
+    shell: bash
+    working-directory: back
+    
 on:
   push:
     branches: [ "main" ]
@@ -26,6 +31,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm ci --prefix $CI_DIR  # Run npm ci inside the /frontend folder
-      - run: npm run build --if-present --prefix $CI_DIR # Run npm build inside the /frontend folder
-      - run: npm test --prefix $CI_DIR  # Run npm test inside the /frontend folder
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
