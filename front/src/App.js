@@ -53,6 +53,7 @@ function App() {
       acceptedFiles.map((file, index) => ({
         preview: URL.createObjectURL(file),
         index,
+        isPdf: file.type === "application/pdf",
       }))
     );
   };
@@ -86,27 +87,39 @@ function App() {
     imagePreviews.forEach((preview) => {
       // Send an HTTP GET request to the image URL to get the raw image file.
       axios.get(preview.preview, { responseType: "blob" }).then((response) => {
+        const contentType = response.headers["content-type"];
+        let fileName;
+
+        // Check if the response data is a PDF file
+        if (contentType === "application/pdf") {
+          fileName = "document.pdf";
+        } else {
+          fileName = "image.png";
+        }
+
         // Convert the response data into a Blob object.
-        const imageFile = new File([response.data], "image.jpg", {
-          type: response.headers["content-type"],
+        const imageFile = new File([response.data], fileName, {
+          type: contentType,
         });
 
         formData.append("files[]", imageFile);
 
+        // Check if all files have been uploaded before making POST request
         if (formData.getAll("files[]").length === imagePreviews.length) {
           // send POST request to backend URL
           axios
             .post("http://localhost:3000/recognize", formData)
             .then((response) => {
-              console.log(response.data);
-              if (response.data[0].name.length > name.length)
-                setName(response.data[0].name);
-              if (response.data[0].phone.length > phone.length)
-                setPhone(response.data[0].phone);
-              if (response.data[0].email.length > email.length)
-                setEmail(response.data[0].email);
-              if (response.data[0].raw.length > raw.length)
-                setRaw(response.data[0].raw);
+              if (response.data.length === 0) {
+                console.log("No data received");
+                return;
+              }
+              console.log("Data received");
+              console.log(response.data[0]);
+              setRaw(response.data[0].raw);
+              setName(response.data[0].name);
+              setPhone(response.data[0].phone);
+              setEmail(response.data[0].email);
             });
         }
       });
@@ -179,29 +192,65 @@ function App() {
                     style={{ position: "relative", overflow: "hidden" }}
                     onClick={() => openModal(preview.index)}
                   >
-                    <img
-                      src={preview.preview}
-                      alt=""
-                      style={{ width: "100%" }}
-                    />
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        width: "100%",
-                        background: "rgba(0, 0, 0, 0.6)",
-                        color: "white",
-                        padding: "0.5rem",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {preview.preview.substring(
-                        preview.preview.lastIndexOf("/") + 1
-                      )}
-                    </div>
+                    {preview.isPdf ? (
+                      <>
+                        <object
+                          data={preview.preview}
+                          type="application/pdf"
+                          width="100%"
+                          height="180px"
+                        >
+                          <Typography variant="body1">
+                            This browser does not support PDFs. Please download
+                            the PDF to view it.
+                          </Typography>
+                        </object>
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            width: "100%",
+                            background: "rgba(0, 0, 0, 0.6)",
+                            color: "white",
+                            padding: "0.5rem",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {preview.preview.substring(
+                            preview.preview.lastIndexOf("/") + 1
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <img
+                          src={preview.preview}
+                          alt=""
+                          style={{ width: "100%" }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            width: "100%",
+                            background: "rgba(0, 0, 0, 0.6)",
+                            color: "white",
+                            padding: "0.5rem",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {preview.preview.substring(
+                            preview.preview.lastIndexOf("/") + 1
+                          )}
+                        </div>
+                      </>
+                    )}
                   </Card>
                 </Grid>
               ))}

@@ -4,7 +4,20 @@ const Tesseract = require("tesseract.js");
 const multer = require("multer");
 const nlp = require("fr-compromise");
 const path = require("path");
-const PDFImage = require("pdf-image").PDFImage;
+const PDFExtract = require("pdf.js-extract").PDFExtract;
+const pdfExtract = new PDFExtract();
+const fs = require("fs");
+const pdfImage = require("pdf-image").PDFImage;
+var pdf2img = require("pdf-img-convert");
+var tokenizer = require("wink-tokenizer");
+// Create it's instance.
+var myTokenizer = tokenizer();
+
+const options = {
+  normalizeWhitespace: true,
+  disableCombineTextItems: false,
+  disableTrimSpacesBetweenWords: true,
+};
 
 // Initialize Express
 const app = express();
@@ -17,34 +30,64 @@ const upload = multer({ dest: "uploads/" });
 let results = [];
 
 // Define a route for image recognition
+// Define a route for image recognition
 app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
-  try {
-    let files = req.files;
-    if (!files || !files.length)
-      return res.status(400).json({ message: "No files were uploaded." });
+  let files = req.files;
+  if (!files || !files.length) {
+    return res.status(400).json({ message: "No files were uploaded." });
+  }
 
-    // Loop through all uploaded files
-    for (let i = 0; i < files.length; i++) {
+  // Initialize results array
+  let results = [];
+
+  // Loop through all uploaded files
+  for (let i = 0; i < files.length; i++) {
+    if (isPdfMimeType(files[i].mimetype)) {
+      const pdfData = fs.readFileSync(files[i].path);
+      pdfExtract.extractBuffer(pdfData, {}, async (err, data) => {
+        if (err) return console.log(err);
+        let text = "";
+        if (data.pages.length) {
+          data.pages.forEach((page) => {
+            page.content.forEach((content) => {
+              text += content.str;
+            });
+          });
+        }
+        if (text.length > 0) {
+          const { name, phone, email, skills, experience, cursus, raw } =
+            await processText(text);
+
+          results.push({
+            name,
+            phone,
+            email,
+            skills,
+            experience,
+            cursus,
+            raw,
+          });
+        }
+        if (results.length === files.length) {
+          res.status(200).json(results);
+        }
+      });
+    } else if (isImageMimeType(files[i].mimetype)) {
       const {
         data: { text },
       } = await Tesseract.recognize(files[i].path, "fra");
 
       const { name, phone, email, skills, experience, cursus, raw } =
-        await processText(text, req);
-
-      console.log(name, phone, email, skills, experience, cursus, raw);
+        await processText(text);
 
       results.push({ name, phone, email, skills, experience, cursus, raw });
-    }
 
-    res.status(200).json(results);
-    results = []; // Reset the results array
-  } catch (error) {
-    console.error(error); // Log the error
-    next(error);
+      if (results.length === files.length) {
+        res.status(200).json(results);
+      }
+    }
   }
 });
-
 function isPdfMimeType(mimeType) {
   return mimeType === "application/pdf";
 }
@@ -85,50 +128,12 @@ function extractCursus(text) {
 }
 
 // Process extracted text
-async function processText(text, req) {
+async function processText(text) {
   let highlight = {};
-  const phones = extractPhone(text);
-  const emails = extractEmail(text);
-  const names = extractName(text);
-  const skills = extractSkills(text);
-  const experience = extractExperience(text);
-  const cursus = extractCursus(text);
-
-  if (isImageMimeType(req.files[0].mimetype)) {
-    // Process text from image
-    const doc = nlp(text);
-    highlight = {
-      nouns: doc.match("#Noun"),
-      verbs: doc.match("#Verb"),
-      adj: doc.match("#Adjective"),
-      adv: doc.match("#Adverb"),
-      det: doc.match("#Determiner"),
-      conj: doc.match("#Conjunction"),
-      num: doc.match("#Value"),
-      penn: doc.compute("penn"),
-      surname: doc.match("#Person"),
-    };
-    highlight = Object.keys(highlight).reduce((acc, key) => {
-      acc[key] = highlight[key].out("array");
-      console.log(key, acc[key]);
-      return acc;
-    }, {});
-    let raw = highlight.penn.map((element) => {
-      // Remove unwanted characters
-      element = element.replace(/[^\w\s\p{L}]/gu, "");
-      // Remove leading/trailing white space
-      element = element.trim();
-      return element;
-    });
-    const name = names && names.length ? names[0] : "";
-    const phone = phones && phones.length ? phones[0] : "";
-    const email = emails && emails.length ? emails[0] : "";
-
-    return { name, phone, email, skills, experience, cursus, raw };
-  }
+  // Process text from image
   const doc = nlp(text);
-
-  // Extract text from PDF
+  myTokenizer.tokenize(text);
+  console.log(myTokenizer.tokenize(text));
   highlight = {
     nouns: doc.match("#Noun"),
     verbs: doc.match("#Verb"),
@@ -140,13 +145,11 @@ async function processText(text, req) {
     penn: doc.compute("penn"),
     surname: doc.match("#Person"),
   };
-
   highlight = Object.keys(highlight).reduce((acc, key) => {
     acc[key] = highlight[key].out("array");
-    console.log(`${key}: ${highlight[key].out("array")}`);
+    // console.log(key, acc[key]);
     return acc;
   }, {});
-
   let raw = highlight.penn.map((element) => {
     // Remove unwanted characters
     element = element.replace(/[^\w\s\p{L}]/gu, "");
@@ -154,13 +157,14 @@ async function processText(text, req) {
     element = element.trim();
     return element;
   });
-  const name = names && names.length ? names[0] : "";
-  const phone = phones && phones.length ? phones[0] : "";
-  const email = emails && emails.length ? emails[0] : "";
-
+  const name = extractName(text);
+  const phone = extractPhone(text);
+  const email = extractEmail(text);
+  const skills = extractSkills(text);
+  const experience = extractExperience(text);
+  const cursus = extractCursus(text);
   return { name, phone, email, skills, experience, cursus, raw };
 }
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
