@@ -1,3 +1,5 @@
+![CI/CD](https://github.com/MathisZerbib/CV-extract/workflows/CI/CD/badge.svg)
+
 # App Readme
 
 This app performs OCR (Optical Character Recognition) on an image and extracts useful information such as name, phone number, and email address. It also performs NLP (Natural Language Processing) to highlight different parts of the extracted text such as nouns, verbs, adjectives, etc. The app is built using Node.js, Express, React, and Tesseract.js.
