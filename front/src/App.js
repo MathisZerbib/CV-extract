@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import LineText from "./components/LineText";
-
+import ResultCard from "./components/ResultCard";
 function App() {
   const [files, setFiles] = useState([]);
   const [currentPreview, setCurrentPreview] = useState(null);
@@ -27,6 +27,7 @@ function App() {
 
   const [raw, setRaw] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [postulants, setPostulants] = useState([]);
 
   const onDropHandler = (acceptedFiles) => {
     setImagePreviews(
@@ -87,6 +88,7 @@ function App() {
         // Check if all files have been uploaded before making POST request
         if (formData.getAll("files[]").length === imagePreviews.length) {
           // send POST request to backend URL
+          let results = [];
           axios
             .post("http://localhost:3000/recognize", formData)
             .then((response) => {
@@ -95,15 +97,21 @@ function App() {
                 return;
               }
               console.log("Data received");
-              console.log(response.data[0]);
-              setRaw(response.data[0].raw);
-              setName(response.data[0].name);
-              setPhone(response.data[0].phone);
-              setEmail(response.data[0].email);
-              setSkills(response.data[0].skills);
-              setExperience(response.data[0].experience);
-              setCursus(response.data[0].cursus);
-              setTag(response.data[0].tag);
+              console.log(response.data);
+              response.data.map((data) => {
+                results.push(data);
+              });
+              setPostulants(results);
+              postulants.map((data) => {
+                setRaw(data.raw);
+                setName(data.name);
+                setPhone(data.phone);
+                setEmail(data.email);
+                setSkills(data.skills);
+                setExperience(data.experience);
+                setCursus(data.cursus);
+                setTag(data.tag);
+              });
             });
         }
       });
@@ -167,27 +175,6 @@ function App() {
               </div>
             )}
           </Dropzone>
-
-          {/* TODO 
-          {imagePreviews.map((preview) => (
-              <CurrentPreviewComponent
-                key={preview.index}
-                index={preview.index}
-                preview={preview.preview}
-                isPdf={preview.isPdf}
-                openModal={openModal}
-                deleteFile={deleteFile}
-              />
-            ))}
-          </div>
-          {isModalOpen && (
-            <ImagePreviewsModal
-              imagePreviews={imagePreviews}
-              currentPreview={currentPreview}
-              closeModal={closeModal}
-            />
-        )}
-         */}
           {imagePreviews.length > 0 && (
             <Grid container spacing={2}>
               {imagePreviews.map((preview) => (
@@ -285,7 +272,7 @@ function App() {
           </DialogContent>
         </Dialog>
       )}
-      <div
+      {/* <div
         style={{
           width: "50vw",
           marginTop: "2rem",
@@ -306,7 +293,17 @@ function App() {
             {...{ raw, name, phone, email, skills, experience, cursus, tag }}
           />
         ) : null}
-      </div>
+      </div> */}
+      <Grid container spacing={2} style={{ marginTop: "2rem" }}>
+        {postulants.length > 0 &&
+          postulants.map((postulant) => {
+            return (
+              <Grid item xs={12} md={4} key={postulant}>
+                <ResultCard {...postulant} />
+              </Grid>
+            );
+          })}
+      </Grid>
     </div>
   );
 }
