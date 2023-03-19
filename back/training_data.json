@@ -475,6 +475,176 @@
     "uid": "event_manager"
   },
   {
+    "text": "pizzaiolo",
+    "entityType": "job_title",
+    "uid": "pizzaiolo"
+  },
+  {
+    "text": "traiteur",
+    "entityType": "job_title",
+    "uid": "traiteur"
+  },
+  {
+    "text": "chef de banquet",
+    "entityType": "job_title",
+    "uid": "chef_de_banquet"
+  },
+  {
+    "text": "chef de partie froid",
+    "entityType": "job_title",
+    "uid": "chef_de_partie_froid"
+  },
+  {
+    "text": "chef de partie chaud",
+    "entityType": "job_title",
+    "uid": "chef_de_partie_chaud"
+  },
+  {
+    "text": "chef de partie pâtisserie",
+    "entityType": "job_title",
+    "uid": "chef_de_partie_patisserie"
+  },
+  {
+    "text": "chef de partie rôtisserie",
+    "entityType": "job_title",
+    "uid": "chef_de_partie_rotisserie"
+  },
+  {
+    "text": "chef de partie saucier",
+    "entityType": "job_title",
+    "uid": "chef_de_partie_saucier"
+  },
+  {
+    "text": "chef de partie garde manger",
+    "entityType": "job_title",
+    "uid": "chef_de_partie_garde_manger"
+  },
+  {
+    "text": "chef de rang junior",
+    "entityType": "job_title",
+    "uid": "chef_de_rang_junior"
+  },
+  {
+    "text": "chef de rang senior",
+    "entityType": "job_title",
+    "uid": "chef_de_rang_senior"
+  },
+  {
+    "text": "commis de bar",
+    "entityType": "job_title",
+    "uid": "commis_de_bar"
+  },
+  {
+    "text": "commis de plonge",
+    "entityType": "job_title",
+    "uid": "commis_de_plonge"
+  },
+  {
+    "text": "économe de cuisine",
+    "entityType": "job_title",
+    "uid": "econome_de_cuisine"
+  },
+  {
+    "text": "écailler",
+    "entityType": "job_title",
+    "uid": "ecailler"
+  },
+  {
+    "text": "garçon de café",
+    "entityType": "job_title",
+    "uid": "garçon_de_café"
+  },
+  {
+    "text": "limonadier",
+    "entityType": "job_title",
+    "uid": "limonadier"
+  },
+  {
+    "text": "marmiton",
+    "entityType": "job_title",
+    "uid": "marmiton"
+  },
+  {
+    "text": "œnologue",
+    "entityType": "job_title",
+    "uid": "oenologue"
+  },
+  {
+    "text": "réceptionniste",
+    "entityType": "job_title",
+    "uid": "receptionniste"
+  },
+  {
+    "text": "runner",
+    "entityType": "job_title",
+    "uid": "runner"
+  },
+  {
+    "text": "sous-chef pâtissier",
+    "entityType": "job_title",
+    "uid": "sous_chef_pâtissier"
+  },
+  {
+    "text": "chef de rang",
+    "entityType": "job_title",
+    "uid": "head_waiter"
+  },
+  {
+    "text": "commis de cuisine",
+    "entityType": "job_title",
+    "uid": "commis_chef"
+  },
+  {
+    "text": "chef de partie",
+    "entityType": "job_title",
+    "uid": "station_chef"
+  },
+  {
+    "text": "équipier polyvalent",
+    "entityType": "job_title",
+    "uid": "multiskilled_teammate"
+  },
+  {
+    "text": "agent polyvalent",
+    "entityType": "job_title",
+    "uid": "multiskilled_agent"
+  },
+  {
+    "text": "sous-chef",
+    "entityType": "job_title",
+    "uid": "sous_chef"
+  },
+  {
+    "text": "chef de bar",
+    "entityType": "job_title",
+    "uid": "head_bartender"
+  },
+  {
+    "text": "directeur de restaurant",
+    "entityType": "job_title",
+    "uid": "restaurant_manager"
+  },
+  {
+    "text": "assistant de direction",
+    "entityType": "job_title",
+    "uid": "assistant_manager"
+  },
+  {
+    "text": "maitre d'hôtel adjoint",
+    "entityType": "job_title",
+    "uid": "assistant_maître_d_hôtel"
+  },
+  {
+    "text": "responsable de salle",
+    "entityType": "job_title",
+    "uid": "dining_room_manager"
+  },
+  {
+    "text": "responsable de cuisine",
+    "entityType": "job_title",
+    "uid": "kitchen_manager"
+  },
+  {
     "text": "cuisson",
     "entityType": "skill",
     "uid": "cooking"
