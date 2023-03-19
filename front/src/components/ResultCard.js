@@ -17,7 +17,6 @@ const ResultCard = (postulant) => {
       <Typography variant="h6">{postulant.name ?? "No name"}</Typography>
       <Typography variant="body1">{postulant.phone ?? "No phone"}</Typography>
       <Typography variant="body1">{postulant.email ?? "No email"}</Typography>
-      <Typography variant="body1">{postulant.tag ?? "No tag"}</Typography>
       <Typography variant="body1">{postulant.skills ?? "No skills"}</Typography>
       <Typography variant="body1">
         {postulant.experience ?? "No experience"}
