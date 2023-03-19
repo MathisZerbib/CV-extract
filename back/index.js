@@ -1,17 +1,25 @@
 // Import dependencies
 const express = require("express");
-const Tesseract = require("tesseract.js");
+const { createWorker } = require("tesseract.js");
+
 const multer = require("multer");
 const nlp = require("fr-compromise");
 const path = require("path");
 const PDFExtract = require("pdf.js-extract").PDFExtract;
 const pdfExtract = new PDFExtract();
 const fs = require("fs");
-const pdfImage = require("pdf-image").PDFImage;
-var pdf2img = require("pdf-img-convert");
+// const pdfImage = require("pdf-image").PDFImage;
+// var pdf2img = require("pdf-img-convert");
 var tokenizer = require("wink-tokenizer");
 // Create it's instance.
 var myTokenizer = tokenizer();
+
+const winkNer = require("wink-ner");
+const winkTokenizer = require("wink-tokenizer");
+var trainingData = require("./training_data.json");
+
+const myNER = winkNer();
+myNER.learn(trainingData);
 
 const options = {
   normalizeWhitespace: true,
@@ -58,6 +66,52 @@ app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
           const { name, phone, email, skills, experience, cursus, raw } =
             await processText(text);
 
+          // Create a new instance of wink-tokenizer and use it to tokenize a sentence
+          const tokenizer = winkTokenizer();
+          const tokens = tokenizer.tokenize(text);
+
+          // Use recognize() to identify entities in the sentence based on the training data
+          const entities = myNER.recognize(tokens);
+
+          // Print the resulting array of tokens with entity information added
+          // console.log(entities);
+          const urls = [];
+          const emails = [];
+          const tag = trainingData
+            .filter((data) => {
+              return entities.find((entity) => {
+                return (
+                  entity.entityType === data.entityType &&
+                  entity.value === data.text
+                );
+              });
+            })
+            .map((data) => {
+              return data.uid;
+            });
+
+          const relevantEmail = entities
+            .filter((entity) => entity.tag === "email")
+            .map((entity) => {
+              entity.value;
+            });
+
+          const relevantUrl = entities
+            .filter((entity) => entity.tag === "url")
+            .map((entity) => entity.value);
+          // Print the relevant data
+
+          if (relevantEmail.length > 0) {
+            relevantUrl.forEach((url) => {
+              urls.push(url);
+            });
+          }
+          if (relevantUrl.length > 0) {
+            relevantUrl.forEach((url) => {
+              urls.push(url);
+            });
+          }
+
           results.push({
             name,
             phone,
@@ -66,6 +120,9 @@ app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
             experience,
             cursus,
             raw,
+            tag,
+            urls,
+            emails,
           });
         }
         if (results.length === files.length) {
@@ -73,14 +130,78 @@ app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
         }
       });
     } else if (isImageMimeType(files[i].mimetype)) {
+      const worker = await createWorker({
+        logger: (m) => console.log(m),
+      });
+
+      await worker.loadLanguage("fra");
+      await worker.initialize("fra");
+
       const {
         data: { text },
-      } = await Tesseract.recognize(files[i].path, "fra");
+      } = await worker.recognize(files[i].path);
+      // console.log(text);
+      await worker.terminate();
 
       const { name, phone, email, skills, experience, cursus, raw } =
         await processText(text);
+      // Create a new instance of wink-tokenizer and use it to tokenize a sentence
+      const tokenizer = winkTokenizer();
+      const tokens = tokenizer.tokenize(text);
 
-      results.push({ name, phone, email, skills, experience, cursus, raw });
+      // Use recognize() to identify entities in the sentence based on the training data
+      const entities = myNER.recognize(tokens);
+
+      // console.log(entities);
+      const urls = [];
+      const emails = [];
+      const tag = trainingData
+        .filter((data) => {
+          return entities.find((entity) => {
+            return (
+              entity.entityType === data.entityType &&
+              entity.value === data.text
+            );
+          });
+        })
+        .map((data) => {
+          return data.uid;
+        });
+
+      const relevantEmail = entities
+        .filter((entity) => entity.tag === "email")
+        .map((entity) => {
+          entity.value;
+        });
+
+      const relevantUrl = entities
+        .filter((entity) => entity.tag === "url")
+        .map((entity) => entity.value);
+      // Print the relevant data
+
+      if (relevantEmail.length > 0) {
+        relevantUrl.forEach((url) => {
+          emails.push(url);
+        });
+      }
+      if (relevantUrl.length > 0) {
+        relevantUrl.forEach((url) => {
+          urls.push(url);
+        });
+      }
+
+      results.push({
+        name,
+        phone,
+        email,
+        skills,
+        experience,
+        cursus,
+        raw,
+        tag,
+        urls,
+        emails,
+      });
 
       if (results.length === files.length) {
         res.status(200).json(results);
@@ -108,7 +229,7 @@ function extractEmail(text) {
   return text.match(regex);
 }
 function extractName(text) {
-  const regex = /^([A-Z][a-z]+\s){2}/;
+  const regex = /^([A-Z][a-z]+\s){2}/g;
   return text.match(regex);
 }
 
@@ -132,10 +253,13 @@ async function processText(text) {
   let highlight = {};
   // Process text from image
   const doc = nlp(text);
+  let str = doc.people();
+  console.log("str :", str);
   myTokenizer.tokenize(text);
-  console.log(myTokenizer.tokenize(text));
+  // console.log(myTokenizer.tokenize(text));
   highlight = {
     nouns: doc.match("#Noun"),
+    name: doc.people(),
     verbs: doc.match("#Verb"),
     adj: doc.match("#Adjective"),
     adv: doc.match("#Adverb"),
@@ -157,12 +281,15 @@ async function processText(text) {
     element = element.trim();
     return element;
   });
-  const name = extractName(text);
-  const phone = extractPhone(text);
-  const email = extractEmail(text);
-  const skills = extractSkills(text);
-  const experience = extractExperience(text);
-  const cursus = extractCursus(text);
+  console.log("highlight: ", highlight);
+
+  const name = extractName(text) ?? "No name found";
+  const phone = extractPhone(text) ?? "No phone number found";
+  const email = extractEmail(text) ?? "No email found";
+  const skills = extractSkills(text) ?? "No skills found";
+  const experience = extractExperience(text) ?? "No experience found";
+  const cursus = extractCursus(text) ?? "No cursus found";
+
   return { name, phone, email, skills, experience, cursus, raw };
 }
 // Error handling middleware

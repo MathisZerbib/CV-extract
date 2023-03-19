@@ -10,33 +10,7 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-
-function Name({ name }) {
-  return (
-    <div style={{ marginBottom: "1rem" }}>
-      <Typography variant="h6">Name:</Typography>
-      <Typography variant="body1">{name}</Typography>
-    </div>
-  );
-}
-
-function Phone({ phone }) {
-  return (
-    <div style={{ marginBottom: "1rem" }}>
-      <Typography variant="h6">Phone:</Typography>
-      <Typography variant="body1">{phone}</Typography>
-    </div>
-  );
-}
-
-function Email({ email }) {
-  return (
-    <div style={{ marginBottom: "1rem" }}>
-      <Typography variant="h6">Email:</Typography>
-      <Typography variant="body1">{email}</Typography>
-    </div>
-  );
-}
+import LineText from "./components/LineText";
 
 function App() {
   const [files, setFiles] = useState([]);
@@ -44,7 +18,13 @@ function App() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [tag, setTag] = useState([]);
+
   const [email, setEmail] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [experience, setExperience] = useState([]);
+  const [cursus, setCursus] = useState([]);
+
   const [raw, setRaw] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -120,6 +100,10 @@ function App() {
               setName(response.data[0].name);
               setPhone(response.data[0].phone);
               setEmail(response.data[0].email);
+              setSkills(response.data[0].skills);
+              setExperience(response.data[0].experience);
+              setCursus(response.data[0].cursus);
+              setTag(response.data[0].tag);
             });
         }
       });
@@ -161,7 +145,7 @@ function App() {
                   flexDirection: "column",
                   justifyContent: "center",
                   alignItems: "center",
-                  minHeight: "20vh",
+                  width: "100px",
                   border: "2px dashed grey",
                   borderRadius: "5px",
                   cursor: "pointer",
@@ -178,12 +162,32 @@ function App() {
                     padding: "1rem",
                   }}
                 >
-                  Drag and drop business card images here or click to select
-                  files
+                  +
                 </Typography>
               </div>
             )}
           </Dropzone>
+
+          {/* TODO 
+          {imagePreviews.map((preview) => (
+              <CurrentPreviewComponent
+                key={preview.index}
+                index={preview.index}
+                preview={preview.preview}
+                isPdf={preview.isPdf}
+                openModal={openModal}
+                deleteFile={deleteFile}
+              />
+            ))}
+          </div>
+          {isModalOpen && (
+            <ImagePreviewsModal
+              imagePreviews={imagePreviews}
+              currentPreview={currentPreview}
+              closeModal={closeModal}
+            />
+        )}
+         */}
           {imagePreviews.length > 0 && (
             <Grid container spacing={2}>
               {imagePreviews.map((preview) => (
@@ -281,28 +285,28 @@ function App() {
           </DialogContent>
         </Dialog>
       )}
-      {name || phone || email || raw ? (
-        <div style={{ marginTop: "1rem" }}>
-          <Typography variant="h5" gutterBottom>
-            Recognized Text
-          </Typography>
-          {name && Name({ name })}
-          {phone && Phone({ phone })}
-          {email && Email({ email })}
-          {raw && (
-            <Grid item xs={12}>
-              <Typography variant="h6" style={{ marginTop: "1rem" }}>
-                {raw.length > 0 && "Raw text:"}
-              </Typography>
-              {raw.map((sentence, index) => (
-                <Typography variant="body1" key={index}>
-                  {sentence}
-                </Typography>
-              ))}
-            </Grid>
-          )}
-        </div>
-      ) : null}
+      <div
+        style={{
+          width: "50vw",
+          marginTop: "2rem",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {raw ||
+        name ||
+        phone ||
+        email ||
+        skills ||
+        experience ||
+        cursus ||
+        tag ? (
+          <LineText
+            {...{ raw, name, phone, email, skills, experience, cursus, tag }}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
