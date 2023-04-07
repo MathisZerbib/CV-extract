@@ -1,7 +1,7 @@
 {
   "name": "cv-converter",
   "version": "0.1.0",
-  "homepage": "https://MathisZerbib.github.io/CV-extract",
+  "homepage": "https://MathisZerbib.github.io",
   "predeploy": "npm run build",
   "deploy": "gh-pages -d build",
   "dependencies": {
