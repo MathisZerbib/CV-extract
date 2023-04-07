@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
+import fileType from "file-type";
 
 const ImagePreviewsModal = ({
   imagePreviews,
@@ -7,6 +8,23 @@ const ImagePreviewsModal = ({
   closeModal,
   currentPreview,
 }) => {
+  const [isPDF, setIsPDF] = useState(false);
+  const [buffer, setBuffer] = useState(null);
+
+  useEffect(() => {
+    if (isModalOpen && currentPreview !== null) {
+      const checkFileType = async () => {
+        const response = await fetch(imagePreviews[currentPreview].preview);
+        const buffer = await response.arrayBuffer();
+        const type = await fileType.fromBuffer(buffer);
+        setIsPDF(type.mime === "application/pdf");
+        setBuffer(buffer);
+      };
+
+      checkFileType();
+    }
+  }, [isModalOpen, currentPreview, imagePreviews]);
+
   return (
     <div
       sx={{
@@ -28,11 +46,25 @@ const ImagePreviewsModal = ({
             )}
           </DialogTitle>
           <DialogContent>
-            <img
-              src={imagePreviews[currentPreview].preview}
-              alt=""
-              sx={{ width: "100%" }}
-            />
+            {isPDF ? (
+              <iframe
+                src={`data:application/pdf;base64,${btoa(
+                  new Uint8Array(buffer).reduce(
+                    (data, byte) => data + String.fromCharCode(byte),
+                    ""
+                  )
+                )}`}
+                width="100%"
+                height="600"
+                title={imagePreviews[currentPreview].preview}
+              />
+            ) : (
+              <img
+                src={imagePreviews[currentPreview].preview}
+                alt=""
+                sx={{ width: "100%" }}
+              />
+            )}
           </DialogContent>
         </Dialog>
       )}

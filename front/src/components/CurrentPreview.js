@@ -11,12 +11,16 @@ const CurrentPreviewComponent = ({ preview, isPdf, onClose, open }) => {
             data={preview}
             type="application/pdf"
             width="100%"
-            height="500"
+            height="700"
           >
             <p>Unable to display PDF file.</p>
           </object>
         ) : (
-          <img src={preview} alt="Preview" style={{ maxWidth: "100%" }} />
+          <img
+            src={preview}
+            alt="Preview"
+            style={{ maxWidth: "100%", maxHeight: "700px", objectFit: "cover" }} // This is to prevent the image from being too big
+          />
         )}
       </DialogContent>
     </Dialog>

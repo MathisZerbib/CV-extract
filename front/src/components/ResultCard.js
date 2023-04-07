@@ -34,6 +34,9 @@ const ResultCard = (postulant) => {
             </Grid>
           ))}
       </Grid>
+      <Typography variant="body1">
+        {postulant.raw ? "Raw:" + postulant.raw : "No Raw"}
+      </Typography>
     </Card>
   );
 };

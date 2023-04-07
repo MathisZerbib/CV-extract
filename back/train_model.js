@@ -1,6 +1,7 @@
 const winkNer = require("wink-ner");
 const winkTokenizer = require("wink-tokenizer");
 var trainingData = require("./training_data.json");
+
 // Define training data for the entities you want to recognize
 // Create a new instance of wink-ner and train it with the training data
 const myNER = winkNer();

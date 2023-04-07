@@ -36,8 +36,18 @@ const upload = multer({ dest: "uploads/" });
 
 // Initialize results array
 let results = [];
+function registerTextFile(path, text) {
+  let index = new Date().getTime();
 
-// Define a route for image recognition
+  /// save text to a txt file
+  fs.writeFile("datasetsTxt/" + path + index + ".txt", text, function (err) {
+    if (err) {
+      return console.log(err);
+    }
+    console.log("The file was saved!");
+  });
+}
+
 // Define a route for image recognition
 app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
   let files = req.files;
@@ -58,11 +68,12 @@ app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
         if (data.pages.length) {
           data.pages.forEach((page) => {
             page.content.forEach((content) => {
-              text += content.str;
+              text += "\n" + content.str;
             });
           });
         }
         if (text.length > 0) {
+          registerTextFile(files[i].originalname, text);
           const { name, phone, email, skills, experience, cursus, raw } =
             await processText(text);
 
@@ -123,6 +134,7 @@ app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
             tag,
             urls,
             emails,
+            raw,
           });
         }
         if (results.length === files.length) {
@@ -201,6 +213,7 @@ app.post("/recognize", upload.array("files[]"), async (req, res, next) => {
         tag,
         urls,
         emails,
+        raw,
       });
 
       if (results.length === files.length) {
@@ -233,65 +246,76 @@ function extractName(text) {
   return text.match(regex);
 }
 
-function extractSkills(text) {
-  const regex = /([A-Z][a-z]+)(?:, )/g;
-  return text.match(regex);
-}
+// function extractSkills(text) {
+//   const regex = /([A-Z][a-z]+)(?:, )/g;
+//   return text.match(regex);
+// }
 
-function extractExperience(text) {
-  const regex = /([A-Z][a-z]+)(?:, )/g;
-  return text.match(regex);
-}
+// function extractExperience(text) {
+//   const regex = /([A-Z][a-z]+)(?:, )/g;
+//   return text.match(regex);
+// }
 
-function extractCursus(text) {
-  const regex = /([A-Z][a-z]+)(?:, )/g;
-  return text.match(regex);
-}
+// function extractCursus(text) {
+//   const regex = /([A-Z][a-z]+)(?:, )/g;
+//   return text.match(regex);
+// }
 
 // Process extracted text
 async function processText(text) {
-  let highlight = {};
-  // Process text from image
+  // Extract named entities using fr-compromise
   const doc = nlp(text);
-  let str = doc.people();
-  console.log("str :", str);
-  myTokenizer.tokenize(text);
-  // console.log(myTokenizer.tokenize(text));
-  highlight = {
-    nouns: doc.match("#Noun"),
-    name: doc.people(),
-    verbs: doc.match("#Verb"),
-    adj: doc.match("#Adjective"),
-    adv: doc.match("#Adverb"),
-    det: doc.match("#Determiner"),
-    conj: doc.match("#Conjunction"),
-    num: doc.match("#Value"),
-    penn: doc.compute("penn"),
-    surname: doc.match("#Person"),
-  };
-  highlight = Object.keys(highlight).reduce((acc, key) => {
-    acc[key] = highlight[key].out("array");
-    // console.log(key, acc[key]);
-    return acc;
-  }, {});
-  let raw = highlight.penn.map((element) => {
-    // Remove unwanted characters
-    element = element.replace(/[^\w\s\p{L}]/gu, "");
-    // Remove leading/trailing white space
-    element = element.trim();
-    return element;
-  });
-  console.log("highlight: ", highlight);
 
+  // Extract general information
   const name = extractName(text) ?? "No name found";
   const phone = extractPhone(text) ?? "No phone number found";
   const email = extractEmail(text) ?? "No email found";
-  const skills = extractSkills(text) ?? "No skills found";
-  const experience = extractExperience(text) ?? "No experience found";
-  const cursus = extractCursus(text) ?? "No cursus found";
+
+  // Extract skills, experience, and cursus using custom functions
+  const skills = extractSkills(doc) ?? "No skills found";
+  const experience = extractExperience(doc) ?? "No experience found";
+  const cursus = extractCursus(doc) ?? "No cursus found";
+  const raw = text;
 
   return { name, phone, email, skills, experience, cursus, raw };
 }
+
+function extractSkills(doc) {
+  const keywords = ["compétences", "skills"];
+  const skills = doc.match(keywords.join("|")).out("array");
+  return skills;
+}
+
+function extractExperience(doc) {
+  const keywords = [
+    "expérience",
+    "stage",
+    "emploi",
+    "travail",
+    "poste",
+    "société",
+    "entreprise",
+    "fonction",
+  ];
+  const experience = doc.match(keywords.join("|")).out("array");
+  return experience;
+}
+
+function extractCursus(doc) {
+  const keywords = [
+    "diplôme",
+    "formation",
+    "école",
+    "université",
+    "cursus",
+    "baccalauréat",
+    "master",
+    "licence",
+  ];
+  const cursus = doc.match(keywords.join("|")).out("array");
+  return cursus;
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

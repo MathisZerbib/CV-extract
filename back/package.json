@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "compromise": "^14.8.2",
     "express": "^4.18.2",
     "fr-compromise": "^0.2.6",
     "fs": "^0.0.1-security",
@@ -22,6 +23,7 @@
     "pdf2json": "^3.0.3",
     "pdfjs": "^2.4.7",
     "pdfjs-dist": "^3.4.120",
+    "spacy-nlp-node": "^1.2.3",
     "tesseract.js": "^4.0.2",
     "wink-eng-lite-web-model": "^1.4.3",
     "wink-ner": "^2.1.0",
