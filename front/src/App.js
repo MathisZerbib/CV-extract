@@ -90,7 +90,7 @@ function App() {
           // send POST request to backend URL
           let results = [];
           axios
-            .post("http://localhost:3000/recognize", formData)
+            .post("https://cv-extract.onrender.com/recognize", formData)
             .then((response) => {
               if (response.data.length === 0) {
                 console.log("No data received");
@@ -272,28 +272,7 @@ function App() {
           </DialogContent>
         </Dialog>
       )}
-      {/* <div
-        style={{
-          width: "50vw",
-          marginTop: "2rem",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        {raw ||
-        name ||
-        phone ||
-        email ||
-        skills ||
-        experience ||
-        cursus ||
-        tag ? (
-          <LineText
-            {...{ raw, name, phone, email, skills, experience, cursus, tag }}
-          />
-        ) : null}
-      </div> */}
+
       <Grid container spacing={2} style={{ marginTop: "2rem" }}>
         {postulants.length > 0 &&
           postulants.map((postulant) => {
